@@ -11,5 +11,17 @@ export default defineConfig({
     cors: {
         origin: process.env.CORS_ORIGIN,
     },
+      proxy: {
+        '/api': {
+            target: 'https://homebranch-dev.hydraux-homelab.com',
+            changeOrigin: true,
+            secure: false,
+        },
+          '/auth': {
+            target: 'https://homebranch-dev.hydraux-homelab.com',
+            changeOrigin: true,
+            secure: false
+          }
+      }
   }
 });
