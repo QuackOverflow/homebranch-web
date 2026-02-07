@@ -125,22 +125,16 @@ export const booksApi = homebranchApi.injectEndpoints({
                 }
 
                 try {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed)) {
-                        const updated = parsed.filter((storedId) => storedId !== id);
-                        if (updated.length === 0) {
-                            localStorage.removeItem(key);
-                        } else {
-                            localStorage.setItem(key, JSON.stringify(updated));
-                        }
-                        return;
+                    const currentlyReadingBooks = JSON.parse(stored);
+                    currentlyReadingBooks.delete(id);
+                    if (Object.keys(currentlyReadingBooks).length === 0) {
+                        localStorage.removeItem(key);
+                    } else {
+                        localStorage.setItem(key, JSON.stringify(currentlyReadingBooks));
                     }
-                } catch {
-                    // Not JSON or not an array; fall through to string comparison.
-                }
-
-                if (stored === id) {
-                    localStorage.removeItem(key);
+                    return;
+                } catch (e) {
+                    console.warn(`Encountered error during book deletion cleanup: ${e}`);
                 }
             }
         }),
