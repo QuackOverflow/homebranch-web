@@ -1,4 +1,4 @@
-import {isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration,} from "react-router";
+import {isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration} from "react-router";
 import React, {type ReactNode} from "react";
 import {Provider as ReduxProvider} from 'react-redux';
 
@@ -24,9 +24,8 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({children}: { children: ReactNode }) {
-
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
         <head>
             <title>Homebranch</title>
             <meta charSet="utf-8"/>
@@ -34,18 +33,18 @@ export function Layout({children}: { children: ReactNode }) {
             <Meta/>
             <Links/>
         </head>
+        <body>
         <Provider>
             <ReduxProvider store={store}>
                 <AuthContextProvider>
                     <Toaster/>
-                    <body>
                     {children}
                     <ScrollRestoration/>
                     <Scripts/>
-                    </body>
                 </AuthContextProvider>
             </ReduxProvider>
         </Provider>
+        </body>
         </html>
     );
 }

@@ -1,14 +1,16 @@
 import {type Action, configureStore, type ThunkAction} from '@reduxjs/toolkit';
 
-import booksReducer from '@/entities/book/model/booksSlice';
 import {listenerMiddleware} from "@/app/listenerMiddleware";
+import {homebranchApi} from "@/shared/api/rtk-query";
 
 export const store = configureStore({
     reducer: {
-        books: booksReducer,
+        [homebranchApi.reducerPath]: homebranchApi.reducer,
     },
     middleware: getDefaultMiddleware =>
-        getDefaultMiddleware().prepend(listenerMiddleware.middleware)
+        getDefaultMiddleware()
+            .prepend(listenerMiddleware.middleware)
+            .concat(homebranchApi.middleware)
 })
 
 export type RootState = ReturnType<typeof store.getState>;
