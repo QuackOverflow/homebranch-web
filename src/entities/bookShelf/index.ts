@@ -10,6 +10,8 @@ export {
     useRemoveBookFromBookShelfMutation,
 } from './api/api';
 
+export type {GetBookShelfBooksRequest} from './api/dtos'
+
 // Model
 export type {BookShelfModel} from './model/BookShelfModel';
 

@@ -10,6 +10,7 @@ import {LibraryPage} from "@/pages/library";
 import type {Route} from "./+types/book-shelf";
 import ToastFactory from "@/app/utils/toast_handler";
 import {HiCollection} from "react-icons/hi";
+import {useLibrarySearch} from "@/features/library";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -25,7 +26,11 @@ export default function BookShelf() {
 }
 
 function BookShelfContent({bookShelfId}: { bookShelfId: string }) {
-    const {data, isLoading, hasNextPage, fetchNextPage} = useGetBookShelfBooksInfiniteQuery(bookShelfId);
+    const query = useLibrarySearch()
+    const {data, isLoading, hasNextPage, fetchNextPage} = useGetBookShelfBooksInfiniteQuery({
+        bookShelfId,
+        query
+    });
     const {data: bookShelf, isLoading: isLoadingBookShelf} = useGetBookShelfByIdQuery(bookShelfId);
 
     const books = useMemo(() => {
@@ -33,6 +38,7 @@ function BookShelfContent({bookShelfId}: { bookShelfId: string }) {
     }, [data])
 
     const bookIds = useMemo(() => books.map(b => b.id), [books]);
+    const filteredBooks = useMemo(() => books.filter(book => book.title.toLowerCase().includes(query)), [books])
 
     if (isLoading || isLoadingBookShelf) {
         return <Loader/>;
@@ -47,13 +53,12 @@ function BookShelfContent({bookShelfId}: { bookShelfId: string }) {
         <Stack justify={"space-evenly"} height={"100%"}>
             <HStack>
                 <Heading>{bookShelf.title}</Heading>
-                <ManageBookShelfBooksButton currentBookIds={bookIds} shelfId={bookShelfId}/>
+                <ManageBookShelfBooksButton bookShelf={bookShelf}/>
             </HStack>
             {bookIds.length === 0 ? _noBooks() :
                 <Box flex={1}>
-
                     <LibraryPage
-                        books={books}
+                        books={filteredBooks}
                         fetchMore={fetchNextPage}
                         hasMore={hasNextPage}
                     />

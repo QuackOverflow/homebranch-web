@@ -1,8 +1,9 @@
 import {homebranchApi} from "@/shared/api/rtk-query";
-import type {BookShelfModel} from "@/entities/bookShelf";
+import type {BookShelfModel, GetBookShelfBooksRequest} from "@/entities/bookShelf";
 import type {BookModel} from "@/entities/book";
 import type {PaginationResult} from "@/shared/api/api_response";
 import {config} from "@/shared";
+import type {QueriedSearch} from "@/entities/book/api/types";
 
 export const bookShelvesApi = homebranchApi.injectEndpoints({
     endpoints: (build) => ({
@@ -21,7 +22,7 @@ export const bookShelvesApi = homebranchApi.injectEndpoints({
                     ? [{type: 'BookShelf' as const, id: result.id}]
                     : []
         }),
-        getBookShelfBooks: build.infiniteQuery<PaginationResult<BookModel[]>, string, number>({
+        getBookShelfBooks: build.infiniteQuery<PaginationResult<BookModel[]>, QueriedSearch<GetBookShelfBooksRequest>, number>({
             infiniteQueryOptions: {
                 initialPageParam: 0,
                 getNextPageParam: (
@@ -41,15 +42,15 @@ export const bookShelvesApi = homebranchApi.injectEndpoints({
                     return nextPage;
                 }
             },
-            query: ({queryArg: bookShelfId, pageParam}) => {
-                return {url: `/book-shelves/${bookShelfId}/books?limit=${config.itemsPerPage}&offset=${pageParam * config.itemsPerPage}`};
+            query: ({queryArg, pageParam}) => {
+                return {url: `/book-shelves/${queryArg.bookShelfId}/books?query=${queryArg.query}limit=${config.itemsPerPage}&offset=${pageParam * config.itemsPerPage}`};
             },
             providesTags: (
                 _result,
                 _error,
-                bookShelfId
+                queryArg
             ) => {
-                return [{type: 'BookShelf', id: bookShelfId}]
+                return [{type: 'BookShelf', id: queryArg.bookShelfId}]
             }
         }),
         getBookShelvesByBook: build.query<BookShelfModel[], string>({

@@ -1,6 +1,10 @@
 import {useMemo, useState} from "react";
 import {useDebounce} from "@uidotdev/usehooks";
-import {useAddBookToBookShelfMutation, useRemoveBookFromBookShelfMutation} from "@/entities/bookShelf";
+import {
+    type BookShelfModel,
+    useAddBookToBookShelfMutation,
+    useRemoveBookFromBookShelfMutation
+} from "@/entities/bookShelf";
 import {useGetBooksInfiniteQuery} from "@/entities/book";
 import {Box, HStack, IconButton, Image, Loader, Popover, Portal, Spinner, Stack, Text} from "@chakra-ui/react";
 import {HiCollection, HiPlus} from "react-icons/hi";
@@ -10,11 +14,10 @@ import {config} from "@/shared";
 import {HiMinus} from "react-icons/hi2";
 
 interface ManageBookShelfBooksButtonProps {
-    currentBookIds: string[];
-    shelfId: string;
+    bookShelf: BookShelfModel;
 }
 
-export function ManageBookShelfBooksButton({currentBookIds, shelfId}: ManageBookShelfBooksButtonProps) {
+export function ManageBookShelfBooksButton({bookShelf}: ManageBookShelfBooksButtonProps) {
     const [query, setQuery] = useState<string>();
     const debouncedQuery = useDebounce(query ?? '', 500)
     const [addBook] = useAddBookToBookShelfMutation();
@@ -30,13 +33,13 @@ export function ManageBookShelfBooksButton({currentBookIds, shelfId}: ManageBook
         return allBooksPaginated?.pages.flatMap(page => page.data) ?? []
     }, [allBooksPaginated]);
 
-    const bookShelfBookIds = new Set(currentBookIds);
+    const bookShelfBookIds = new Set(bookShelf?.books.map(book => book.id));
 
     const handleToggle = (bookId: string, isOnShelf: boolean) => {
         if (isOnShelf) {
-            removeBook({shelfId, bookId});
+            removeBook({shelfId: bookShelf.id, bookId});
         } else {
-            addBook({shelfId, bookId});
+            addBook({shelfId: bookShelf.id, bookId});
         }
     };
 
