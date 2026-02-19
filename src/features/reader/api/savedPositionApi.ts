@@ -1,25 +1,5 @@
-import {config} from "@/shared";
+import {axiosInstance} from "@/shared/api/axios";
 import type {SavedPosition} from "../types/SavedPosition";
-
-async function fetchWithRetry(url: string, options: RequestInit): Promise<Response> {
-    let response = await fetch(url, options);
-
-    if (response.status === 401) {
-        const refreshResponse = await fetch(`${config.authenticationUrl}/refresh`, {
-            method: "POST",
-            credentials: "include",
-        });
-
-        if (refreshResponse.ok) {
-            response = await fetch(url, options);
-        } else {
-            window.location.href = "/login";
-            throw new Error("Session expired");
-        }
-    }
-
-    return response;
-}
 
 function getUserId(): string {
     const userId = sessionStorage.getItem("user_id");
@@ -29,52 +9,27 @@ function getUserId(): string {
 
 export async function getAllSavedPositions(): Promise<SavedPosition[]> {
     const userId = getUserId();
-    const response = await fetchWithRetry(
-        `${config.apiUrl}/users/${userId}/saved-positions`,
-        {method: "GET", credentials: "include"},
-    );
-
-    if (!response.ok) throw new Error("Failed to fetch saved positions");
-
-    const result = await response.json();
-    return result.value as SavedPosition[];
+    const response = await axiosInstance.get(`/users/${userId}/saved-positions`);
+    return response.data.value as SavedPosition[];
 }
 
 export async function getSavedPosition(bookId: string): Promise<SavedPosition | null> {
     const userId = getUserId();
-    const response = await fetchWithRetry(
-        `${config.apiUrl}/users/${userId}/saved-positions/${bookId}`,
-        {method: "GET", credentials: "include"},
-    );
-
-    if (response.status === 404) return null;
-    if (!response.ok) throw new Error("Failed to fetch saved position");
-
-    const result = await response.json();
-    return result.value as SavedPosition;
+    try {
+        const response = await axiosInstance.get(`/users/${userId}/saved-positions/${bookId}`);
+        return response.data.value as SavedPosition;
+    } catch (error: any) {
+        if (error.response?.status === 404) return null;
+        throw error;
+    }
 }
 
 export async function savePosition(bookId: string, position: string, deviceName: string): Promise<void> {
     const userId = getUserId();
-    const response = await fetchWithRetry(
-        `${config.apiUrl}/users/${userId}/saved-positions/${bookId}`,
-        {
-            method: "PUT",
-            credentials: "include",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({position, deviceName}),
-        },
-    );
-
-    if (!response.ok) throw new Error("Failed to save position");
+    await axiosInstance.put(`/users/${userId}/saved-positions/${bookId}`, {position, deviceName});
 }
 
 export async function deleteSavedPosition(bookId: string): Promise<void> {
     const userId = getUserId();
-    const response = await fetchWithRetry(
-        `${config.apiUrl}/users/${userId}/saved-positions/${bookId}`,
-        {method: "DELETE", credentials: "include"},
-    );
-
-    if (!response.ok) throw new Error("Failed to delete saved position");
+    await axiosInstance.delete(`/users/${userId}/saved-positions/${bookId}`);
 }

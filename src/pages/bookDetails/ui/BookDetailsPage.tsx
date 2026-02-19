@@ -15,6 +15,7 @@ export interface BookDetailsPageProps {
 }
 
 function isBookOpenedLocally(bookId: string): boolean {
+    if (typeof window === "undefined") return false;
     const currentlyReading = JSON.parse(
         localStorage.getItem("currentlyReading") ?? "{}"
     );

@@ -16,6 +16,7 @@ import {JumpToSavedPositionModal, type ModalCase} from "./JumpToSavedPositionMod
 import type {SavedPosition} from "../types/SavedPosition";
 
 function getInitialLocation(bookId: string): string | number {
+    if (typeof window === "undefined") return 0;
     const savedLocation = JSON.parse(
         localStorage.getItem("currentlyReading") ?? "{}",
     )[bookId];
@@ -162,17 +163,7 @@ export function Reader({book}: ReaderProps) {
                 const serverPos = await getSavedPosition(book.id);
                 if (cancelled) return;
 
-                if (!serverPos) {
-                    const currentlyReading = JSON.parse(
-                        localStorage.getItem("currentlyReading") ?? "{}",
-                    );
-                    if (book.id in currentlyReading) {
-                        delete currentlyReading[book.id];
-                        localStorage.setItem("currentlyReading", JSON.stringify(currentlyReading));
-                        setLocation(0);
-                    }
-                    return;
-                }
+                if (!serverPos) return;
 
                 if (renditionRef.current) {
                     buildModalCase(serverPos, renditionRef.current);
@@ -255,8 +246,6 @@ export function Reader({book}: ReaderProps) {
             ToastFactory({message: "Failed to sync local position to cloud", type: "warning"});
         }
     }, [book.id, location, deviceName]);
-
-    const bgColor = isDark ? "#1a202c" : "#ffffff";
 
     return (
         <>

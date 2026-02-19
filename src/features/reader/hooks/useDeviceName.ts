@@ -1,6 +1,8 @@
 const STORAGE_KEY = "homebranch-device-name";
 
 function generateDeviceName(): string {
+    if (typeof navigator === "undefined") return "Unknown Device";
+
     const ua = navigator.userAgent;
 
     let browser = "Unknown Browser";
@@ -20,6 +22,8 @@ function generateDeviceName(): string {
 }
 
 export function useDeviceName(): string {
+    if (typeof window === "undefined") return "Unknown Device";
+
     let name = localStorage.getItem(STORAGE_KEY);
     if (!name) {
         name = generateDeviceName();

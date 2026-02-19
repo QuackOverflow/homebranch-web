@@ -25,24 +25,8 @@ export function useStorageLocations(localBookIds: string[]): StorageLocationsRes
                 const cloudPositions = await getAllSavedPositions();
                 const cloudSet = new Set(cloudPositions.map((p) => p.bookId));
 
-                const staleIds: string[] = [];
                 for (const id of localBookIds) {
-                    if (cloudSet.has(id)) {
-                        locations[id] = "both";
-                    } else {
-                        staleIds.push(id);
-                    }
-                }
-
-                if (staleIds.length > 0) {
-                    const currentlyReading = JSON.parse(
-                        localStorage.getItem("currentlyReading") ?? "{}",
-                    );
-                    for (const id of staleIds) {
-                        delete currentlyReading[id];
-                        allIds.delete(id);
-                    }
-                    localStorage.setItem("currentlyReading", JSON.stringify(currentlyReading));
+                    locations[id] = cloudSet.has(id) ? "both" : "local";
                 }
 
                 for (const pos of cloudPositions) {

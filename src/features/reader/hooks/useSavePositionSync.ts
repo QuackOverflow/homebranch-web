@@ -1,10 +1,16 @@
-import {useCallback, useRef} from "react";
+import {useCallback, useEffect, useRef} from "react";
 import {savePosition} from "../api/savedPositionApi";
 import ToastFactory from "@/app/utils/toast_handler";
 
 export function useSavePositionSync(bookId: string, deviceName: string) {
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const failedRef = useRef(false);
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
+    }, []);
 
     const onLocationChange = useCallback(
         (location: string | number) => {
